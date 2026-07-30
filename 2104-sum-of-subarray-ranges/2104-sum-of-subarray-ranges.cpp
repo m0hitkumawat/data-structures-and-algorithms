@@ -1,180 +1,143 @@
 class Solution {
 public:
 
-    vector<int> nextSmallest(vector<int>& arr){
+    //prev smaller
+    vector<int> prevSmaller(vector<int>& nums){
 
-        //vector creatio to store answer i.e. indexes
-        vector<int>ans;
+        stack<int> st;
+        int n = nums.size();
+        vector<int> prev(n);
 
-        // and then stack create krenge or usme -1 insert kr denge taaki compare kar sakke!
-        stack<int>s;
-        s.push(-1);
+        for(int i=0; i<n; i++){
 
-        for(int i=arr.size()-1; i>=0; i--){
-
-            //kab tk loop chlega??
-            //jab tk stack empty na ho ya fhir top ka element badda ho
-            while(!s.empty() && s.top() != -1 && arr[s.top()] >= arr[i]){
-                //pop krte jaana hai
-                s.pop();
+            if(st.empty())
+                prev[i] = -1;
+            else{
+                while(!st.empty() && nums[st.top()] >= nums[i]){
+                    st.pop();
+                }
+                prev[i] = st.empty() ? -1 : st.top();
             }
-            //ham yaha tak aaye hai mtlb ki top par uss se chota element hai..
-            ans.push_back(s.top());
-
-            //now stack me tho hamme curr insert krna hi hotahai...but kyu??
-            //bcz ye maybe kissi or ka answer ho
-            s.push(i);  //storing 'i' index!!
+            st.push(i);
         }
-        reverse(ans.begin(), ans.end());
-        return ans;
+        return prev;
     }
 
-    vector<int> prevSmallest(vector<int>& arr){
+    // next smaller
+    vector<int> nextSmaller(vector<int>& nums){
 
-        //vector creatio to store answer i.e. indexes
-        vector<int>ans;
+        stack<int> st;
+        int n = nums.size();
+        vector<int> next(n);
 
-        // and then stack create krenge or usme -1 insert kr denge taaki compare kar sakke!
-        stack<int>s;
-        s.push(-1);
+        for(int i=n-1; i>=0; i--){
 
-        for(int i=0; i<arr.size(); i++){
-
-            //kab tk loop chlega??
-            //jab tk stack empty na ho ya fhir top ka element badda ho
-            while(!s.empty() && s.top() != -1 && arr[s.top()] > arr[i]){
-                //pop krte jaana hai
-                s.pop();
+            if(st.empty())
+                next[i] = n;
+            else{
+                while(!st.empty() && nums[st.top()] > nums[i]){
+                    st.pop();
+                }
+                next[i] = st.empty() ? n : st.top();
             }
-            //ham yaha tak aaye hai mtlb ki top par uss se chota element hai..
-            ans.push_back(s.top());
-
-
-            //now stack me tho hamme curr insert krna hi hotahai...but kyu??
-            //bcz ye maybe kissi or ka answer ho
-            s.push(i);  //storing 'i' index!!
+            st.push(i);
         }
-        return ans;
+        return next;
     }
 
-    long long sumSubarrayMins(vector<int>& arr) {
+    //SUM OF MIN WAALA OF ALL SUBARRAY
+    long long sumOfSubArrayMin(vector<int>& nums){
+
+        // me kyoki yaha min ka sum calu karuga
+        int n = nums.size();
+        long long totalSum = 0;
+
+        //tho mers prev and next min ke liye hai!
+        vector<int> prev = prevSmaller(nums);
+        vector<int> next = nextSmaller(nums);
+
+        for(int i=0; i<n; i++){
+
+            long long ls = i - prev[i];
+            long long rs = next[i] - i;
+
+            long long noOfWays = ls*rs;
+            long long sum = noOfWays*nums[i];
+
+            totalSum += sum;
+        }
+        return totalSum;
+    }
+
+    //PrevGreater ka block
+    vector<int> prevGreater(vector<int>& nums){
+
+        stack<int> st;
+        int n = nums.size();
+        vector<int> prev(n);
+
+        for(int i=0; i<n; i++){
+
+            if(st.empty())
+                prev[i] = -1;
+            else{
+                while(!st.empty() && nums[st.top()] <= nums[i])
+                    st.pop();
+
+                prev[i] = st.empty() ? -1 : st.top();
+            }
+            st.push(i);
+        }
+        return prev;
+    }
+    
+    // nextGreater ka block
+    vector<int> nextGreater(vector<int>& nums){
+
+        stack<int> st;
+        int n = nums.size();
+        vector<int> next(n);
+
+        for(int i=n-1; i>=0; i--){
+
+            if(st.empty())
+                next[i] = n;
+            else{
+                while(!st.empty() && nums[st.top()] < nums[i])
+                    st.pop();
+
+                next[i] = st.empty() ? n : st.top();
+            }
+            st.push(i);
+        }
+        return next;
+    }
+    //SUM OF MAX WAALA BLOCK
+    long long sumOfSubArrayMax(vector<int>& nums){
         
-        //creating next and prev vector to store indexes..
-        //indexes of smallest elemt in array...so tham possible substring ban aaye
-        vector<int>next = nextSmallest(arr);
-        vector<int>prev = prevSmallest(arr);
-
         long long sum = 0;
+        int n = nums.size();
+        vector<int> prev = prevGreater(nums);
+        vector<int> next = nextGreater(nums);
 
-       //iterate krna hai har ek elemt par
-        for(int i=0; i<arr.size(); i++){
+        for(int i=0; i<n; i++){
 
-            //aab hamme ye dhekna hai ki har element kitni baar contribute krega!!
-            int nexti = next[i] == -1 ? arr.size(): next[i];
-            int previ = prev[i];
+            long long ls = i - prev[i];
+            long long rs = next[i] - i;
 
-            //left and right me kitne element hai wo chek krna hai:
-            int left = i - previ;
-            int right = nexti - i;
-            
-            //aab check krenge kii kitni baar wo element min ban raha hoga:
-            long long no_of_times = (left * right);
+            long long noOfWays = ls*rs;
+            long long totalSum = noOfWays*nums[i];
 
-            //aab total sum calu krege:
-            sum = (sum + no_of_times*arr[i]);
-        }
-        return sum;
-    }
-
-    vector<int> nextGreatest(vector<int>& arr){
-
-        //vector creatio to store answer i.e. indexes
-        vector<int>ans;
-
-        // and then stack create krenge or usme -1 insert kr denge taaki compare kar sakke!
-        stack<int>s;
-        s.push(-1);
-
-        for(int i=arr.size()-1; i>=0; i--){
-
-            //kab tk loop chlega??
-            //jab tk stack empty na ho ya fhir top ka element badda ho
-            while(!s.empty() && s.top() != -1 && arr[s.top()] <= arr[i]){
-                //pop krte jaana hai
-                s.pop();
-            }
-            //ham yaha tak aaye hai mtlb ki top par uss se chota element hai..
-            ans.push_back(s.top());
-
-            //now stack me tho hamme curr insert krna hi hotahai...but kyu??
-            //bcz ye maybe kissi or ka answer ho
-            s.push(i);  //storing 'i' index!!
-        }
-        reverse(ans.begin(), ans.end());
-        return ans;
-    }
-
-    vector<int> prevGreatest(vector<int>& arr){
-
-        //vector creatio to store answer i.e. indexes
-        vector<int>ans;
-
-        // and then stack create krenge or usme -1 insert kr denge taaki compare kar sakke!
-        stack<int>s;
-        s.push(-1);
-
-        for(int i=0; i<arr.size(); i++){
-
-            //kab tk loop chlega??
-            //jab tk stack empty na ho ya fhir top ka element badda ho
-            while(!s.empty() && s.top() != -1 && arr[s.top()] < arr[i]){
-                //pop krte jaana hai
-                s.pop();
-            }
-            //ham yaha tak aaye hai mtlb ki top par uss se chota element hai..
-            ans.push_back(s.top());
-
-
-            //now stack me tho hamme curr insert krna hi hotahai...but kyu??
-            //bcz ye maybe kissi or ka answer ho
-            s.push(i);  //storing 'i' index!!
-        }
-        return ans;
-    }
-    long long sumSubarrayMaxs(vector<int>& arr) {
-        
-        //creating next and prev vector to store indexes..
-        //indexes of smallest elemt in array...so tham possible substring ban aaye
-        vector<int>next = nextGreatest(arr);
-        vector<int>prev = prevGreatest(arr);
-
-        long long sum = 0;
-
-       //iterate krna hai har ek elemt par
-        for(int i=0; i<arr.size(); i++){
-
-            //aab hamme ye dhekna hai ki har element kitni baar contribute krega!!
-            int nexti = next[i] == -1 ? arr.size(): next[i];
-            int previ = prev[i];
-
-            //left and right me kitne element hai wo chek krna hai:
-            int left = i - previ;
-            int right = nexti - i;
-            
-            //aab check krenge kii kitni baar wo element min ban raha hoga:
-            long long no_of_times = (left * right);
-
-            //aab total sum calu krege:
-            sum = (sum + no_of_times*arr[i]);
+            sum += totalSum;
         }
         return sum;
     }
 
     long long subArrayRanges(vector<int>& nums) {
         
-        auto smallestSum = sumSubarrayMins(nums);
-        auto largestSum = sumSubarrayMaxs(nums);
+        long long small = sumOfSubArrayMin(nums);
+        long long large = sumOfSubArrayMax(nums);
 
-        return largestSum - smallestSum;
+        return large - small; 
     }
 };
