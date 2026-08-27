@@ -1,24 +1,28 @@
+#include <unordered_set>
+#include <vector>
+using namespace std;
+
 class Solution {
 public:
     int longestConsecutive(vector<int>& nums) {
-    
-    int longest = 0;
-    set<int> set(nums.begin(), nums.end());
+        unordered_set<int> numSet(nums.begin(), nums.end());
+        int longest = 0;
 
-    for(int x: set){
+        for (int num : numSet) {
+            // only start counting if num is the beginning of a sequence
+            if (numSet.find(num - 1) == numSet.end()) {
+                int currentNum = num;
+                int currentLength = 1;
 
-        if(set.find(x-1) == set.end()){
+                while (numSet.find(currentNum + 1) != numSet.end()) {
+                    currentNum += 1;
+                    currentLength += 1;
+                }
 
-            int currNum = x;
-            int currLen = 1;
-
-            while(set.find(currNum+1) != set.end()){
-                currNum++;
-                currLen++;
+                longest = max(longest, currentLength);
             }
-            longest = max(longest, currLen);
         }
-    }
+
         return longest;
     }
 };
